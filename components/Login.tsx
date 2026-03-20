@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, User, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Lock, User, ShieldCheck, AlertCircle, Key, ExternalLink } from 'lucide-react';
+import { getStoredKeys, saveStoredKeys } from '../services/keyService';
 
 interface LoginProps {
   onLogin: () => void;
@@ -9,13 +10,26 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const keys = getStoredKeys();
+    if (keys.length > 0) {
+      setApiKey(keys[0]);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    // Save API key if provided
+    if (apiKey.trim()) {
+      saveStoredKeys(apiKey.trim());
+    }
 
     // Simulate a small delay for luxury feel
     setTimeout(() => {
@@ -86,6 +100,35 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="luxury-label mb-0">API KEY CÁ NHÂN (GEMINI)</label>
+                <a 
+                  href="https://aistudio.google.com/app/apikey" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[9px] text-luxury-gold hover:text-white transition-colors flex items-center gap-1 font-black uppercase tracking-wider"
+                >
+                  Lấy Key miễn phí <ExternalLink className="w-2 h-2" />
+                </a>
+              </div>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-luxury-gold/40">
+                  <Key className="w-4 h-4" />
+                </div>
+                <input 
+                  type="text"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="input-field pl-12 text-xs"
+                  placeholder="Dán mã AIza... của bạn vào đây"
+                />
+              </div>
+              <p className="mt-2 text-[9px] text-white/30 italic leading-relaxed">
+                * Khuyên dùng để tránh quá tải hệ thống chung và đạt tốc độ tạo prompt nhanh nhất.
+              </p>
             </div>
 
             {error && (
